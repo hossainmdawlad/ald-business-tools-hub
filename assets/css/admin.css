@@ -1,0 +1,25 @@
+/**
+ * ALD Business Tools Hub — Admin Styles
+ */
+
+/* Tool type meta box */
+.bth-tool-type-field {
+    margin-bottom: 12px;
+}
+
+.bth-tool-type-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.bth-tool-type-field select,
+.bth-tool-type-field input[type="text"] {
+    width: 100%;
+}
+
+.bth-tool-type-field .description {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 4px;
+}
