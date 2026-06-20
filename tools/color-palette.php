@@ -12,7 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="bth-color-wrap">
     <div class="bth-form-group">
         <label class="bth-form-label" for="bth-color-base"><?php esc_html_e( 'Base Color', 'ald-business-tools' ); ?></label>
-        <input class="bth-form-input" type="color" id="bth-color-base" value="#D60000">
+        <div class="bth-color-picker-wrap">
+            <input class="bth-form-input bth-color-input" type="color" id="bth-color-base" value="#D60000">
+            <span class="bth-color-preview" id="bth-color-preview"></span>
+            <input class="bth-form-input bth-color-hex-input" type="text" id="bth-color-hex" value="#D60000" maxlength="7" placeholder="#000000">
+        </div>
     </div>
 
     <div class="bth-form-group">
@@ -47,6 +51,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     'use strict';
 
     var baseInput   = document.getElementById('bth-color-base');
+    var hexInput    = document.getElementById('bth-color-hex');
+    var preview     = document.getElementById('bth-color-preview');
     var typeSelect  = document.getElementById('bth-color-type');
     var btnGenerate = document.getElementById('bth-color-generate');
     var palette     = document.getElementById('bth-color-palette');
@@ -57,6 +63,25 @@ if ( ! defined( 'ABSPATH' ) ) {
     var outputArea  = document.getElementById('bth-color-output');
 
     var currentPalette = [];
+
+    // Sync color picker ↔ hex input
+    function updateColorFromPicker() {
+        var hex = baseInput.value;
+        hexInput.value = hex;
+        preview.style.backgroundColor = hex;
+    }
+    function updateColorFromHex() {
+        var hex = hexInput.value;
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+            baseInput.value = hex;
+            preview.style.backgroundColor = hex;
+        }
+    }
+    baseInput.addEventListener('input', updateColorFromPicker);
+    hexInput.addEventListener('input', updateColorFromHex);
+    hexInput.addEventListener('blur', updateColorFromHex);
+    // Init
+    updateColorFromPicker();
 
     // ---- HSL helpers ----
 
@@ -292,7 +317,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     // ---- Event listeners ----
 
     btnGenerate.addEventListener('click', function () {
-        var hex   = baseInput.value;
+        var hex   = hexInput.value || baseInput.value;
+        if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+            hex = baseInput.value;
+        }
         var type  = typeSelect.value;
         var colors = generatePalette(hex, type);
         renderPalette(colors);

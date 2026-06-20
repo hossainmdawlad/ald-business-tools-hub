@@ -21,6 +21,23 @@ get_header();
 
                 <?php while ( have_posts() ) : the_post(); ?>
 
+                <!-- Breadcrumbs -->
+                <nav class="bth-breadcrumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'ald-business-tools' ); ?>">
+                    <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'ald-business-tools' ); ?></a>
+                    <span class="bth-breadcrumb-sep">›</span>
+                    <a href="<?php echo esc_url( get_post_type_archive_link( 'bth_tool' ) ); ?>"><?php esc_html_e( 'Tools', 'ald-business-tools' ); ?></a>
+                    <?php
+                    $categories = get_the_terms( get_the_ID(), 'bth_tool_category' );
+                    if ( $categories && ! is_wp_error( $categories ) ) :
+                        $cat = $categories[0];
+                    ?>
+                        <span class="bth-breadcrumb-sep">›</span>
+                        <a href="<?php echo esc_url( get_term_link( $cat ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+                    <?php endif; ?>
+                    <span class="bth-breadcrumb-sep">›</span>
+                    <span class="bth-breadcrumb-current"><?php the_title(); ?></span>
+                </nav>
+
                 <article id="tool-<?php the_ID(); ?>" <?php post_class( 'bth-tool-article' ); ?>>
 
                     <!-- Tool Header -->

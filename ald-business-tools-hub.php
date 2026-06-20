@@ -61,6 +61,29 @@ final class ALD_Business_Tools_Hub {
         add_action( 'wp_ajax_nopriv_bth_currency_convert', array( 'BTH_Ajax', 'currency_convert' ) );
         add_filter( 'single_template', array( $this, 'load_single_template' ) );
         add_filter( 'archive_template', array( $this, 'load_archive_template' ) );
+        add_action( 'wp_head', array( $this, 'output_button_color_css' ), 20 );
+    }
+
+    /**
+     * Output dynamic button color CSS from settings.
+     */
+    public function output_button_color_css() {
+        $primary   = get_option( 'bth_btn_primary_color', '#D60000' );
+        $primary_h = get_option( 'bth_btn_primary_hover', '#b80000' );
+        $secondary = get_option( 'bth_btn_secondary_color', '#f5f5f5' );
+        $secondary_h = get_option( 'bth_btn_secondary_hover', '#e5e5e5' );
+
+        // Only output if different from defaults
+        if ( $primary === '#D60000' && $primary_h === '#b80000' && $secondary === '#f5f5f5' && $secondary_h === '#e5e5e5' ) {
+            return;
+        }
+
+        echo '<style id="bth-button-colors">';
+        echo '.bth-btn-primary{background:' . esc_attr( $primary ) . ' !important;}';
+        echo '.bth-btn-primary:hover{background:' . esc_attr( $primary_h ) . ' !important;}';
+        echo '.bth-btn-secondary{background:' . esc_attr( $secondary ) . ' !important;border-color:' . esc_attr( $secondary ) . ' !important;}';
+        echo '.bth-btn-secondary:hover{background:' . esc_attr( $secondary_h ) . ' !important;border-color:' . esc_attr( $secondary_h ) . ' !important;}';
+        echo '</style>' . "\n";
     }
 
     /**

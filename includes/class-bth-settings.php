@@ -62,6 +62,15 @@ class BTH_Settings {
         // Invoice section
         add_settings_section( 'bth_invoice_section', __( 'Invoice Generator', 'ald-business-tools' ), null, 'bth-settings' );
         add_settings_field( 'bth_invoice_prefix', __( 'Invoice Prefix', 'ald-business-tools' ), array( $this, 'render_text_field' ), 'bth-settings', 'bth_invoice_section', array( 'name' => 'bth_invoice_prefix' ) );
+
+        // Button Colors section
+        add_settings_section( 'bth_button_section', __( 'Button Colors', 'ald-business-tools' ), function() {
+            echo '<p>' . __( 'Customize the primary and secondary button colors across all tools.', 'ald-business-tools' ) . '</p>';
+        }, 'bth-settings' );
+        add_settings_field( 'bth_btn_primary_color', __( 'Primary Button Color', 'ald-business-tools' ), array( $this, 'render_color_field' ), 'bth-settings', 'bth_button_section', array( 'name' => 'bth_btn_primary_color', 'default' => '#D60000' ) );
+        add_settings_field( 'bth_btn_primary_hover', __( 'Primary Button Hover', 'ald-business-tools' ), array( $this, 'render_color_field' ), 'bth-settings', 'bth_button_section', array( 'name' => 'bth_btn_primary_hover', 'default' => '#b80000' ) );
+        add_settings_field( 'bth_btn_secondary_color', __( 'Secondary Button Color', 'ald-business-tools' ), array( $this, 'render_color_field' ), 'bth-settings', 'bth_button_section', array( 'name' => 'bth_btn_secondary_color', 'default' => '#f5f5f5' ) );
+        add_settings_field( 'bth_btn_secondary_hover', __( 'Secondary Button Hover', 'ald-business-tools' ), array( $this, 'render_color_field' ), 'bth-settings', 'bth_button_section', array( 'name' => 'bth_btn_secondary_hover', 'default' => '#e5e5e5' ) );
     }
 
     public function render_text_field( $args ) {
@@ -72,6 +81,13 @@ class BTH_Settings {
     public function render_number_field( $args ) {
         $value = get_option( $args['name'], 12 );
         echo '<input type="number" name="' . esc_attr( $args['name'] ) . '" value="' . esc_attr( $value ) . '" min="1" max="100" class="small-text">';
+    }
+
+    public function render_color_field( $args ) {
+        $default = isset( $args['default'] ) ? $args['default'] : '#000000';
+        $value   = get_option( $args['name'], $default );
+        echo '<input type="color" name="' . esc_attr( $args['name'] ) . '" value="' . esc_attr( $value ) . '" style="width:60px;height:34px;padding:0;border:1px solid #8c8f94;border-radius:4px;cursor:pointer;">';
+        echo ' <code style="font-size:13px;color:#666;">' . esc_html( $value ) . '</code>';
     }
 
     public function render_page() {
