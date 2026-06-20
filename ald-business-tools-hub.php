@@ -59,6 +59,35 @@ final class ALD_Business_Tools_Hub {
         add_action( 'save_post_bth_tool', array( $this, 'save_meta' ) );
         add_action( 'wp_ajax_bth_currency_convert', array( 'BTH_Ajax', 'currency_convert' ) );
         add_action( 'wp_ajax_nopriv_bth_currency_convert', array( 'BTH_Ajax', 'currency_convert' ) );
+        add_filter( 'single_template', array( $this, 'load_single_template' ) );
+        add_filter( 'archive_template', array( $this, 'load_archive_template' ) );
+    }
+
+    /**
+     * Load custom single template for bth_tool CPT.
+     */
+    public function load_single_template( $template ) {
+        global $post;
+        if ( $post && $post->post_type === 'bth_tool' ) {
+            $plugin_template = BTH_PLUGIN_DIR . 'templates/single-bth_tool.php';
+            if ( file_exists( $plugin_template ) ) {
+                return $plugin_template;
+            }
+        }
+        return $template;
+    }
+
+    /**
+     * Load custom archive template for bth_tool CPT.
+     */
+    public function load_archive_template( $template ) {
+        if ( is_post_type_archive( 'bth_tool' ) || is_tax( 'bth_tool_category' ) ) {
+            $plugin_template = BTH_PLUGIN_DIR . 'templates/archive-tool.php';
+            if ( file_exists( $plugin_template ) ) {
+                return $plugin_template;
+            }
+        }
+        return $template;
     }
 
     public function add_meta_boxes() {
