@@ -62,6 +62,17 @@ final class ALD_Business_Tools_Hub {
         add_filter( 'single_template', array( $this, 'load_single_template' ) );
         add_filter( 'archive_template', array( $this, 'load_archive_template' ) );
         add_action( 'wp_head', array( $this, 'output_button_color_css' ), 20 );
+        add_action( 'pre_get_posts', array( $this, 'set_tools_per_page' ) );
+    }
+
+    /**
+     * Set tools per page on archive pages
+     */
+    public function set_tools_per_page( $query ) {
+        if ( ! is_admin() && $query->is_main_query() && ( is_post_type_archive( 'bth_tool' ) || is_tax( 'bth_tool_category' ) ) ) {
+            $per_page = get_option( 'bth_tools_per_page', 12 );
+            $query->set( 'posts_per_page', absint( $per_page ) );
+        }
     }
 
     /**
@@ -73,12 +84,8 @@ final class ALD_Business_Tools_Hub {
         $secondary = get_option( 'bth_btn_secondary_color', '#f5f5f5' );
         $secondary_h = get_option( 'bth_btn_secondary_hover', '#e5e5e5' );
 
-        // Only output if different from defaults
-        if ( $primary === '#D60000' && $primary_h === '#b80000' && $secondary === '#f5f5f5' && $secondary_h === '#e5e5e5' ) {
-            return;
-        }
-
         echo '<style id="bth-button-colors">';
+        echo ':root{--bth-primary:' . esc_attr( $primary ) . ';}';
         echo '.bth-btn-primary{background:' . esc_attr( $primary ) . ' !important;}';
         echo '.bth-btn-primary:hover{background:' . esc_attr( $primary_h ) . ' !important;}';
         echo '.bth-btn-secondary{background:' . esc_attr( $secondary ) . ' !important;border-color:' . esc_attr( $secondary ) . ' !important;}';
@@ -133,6 +140,8 @@ final class ALD_Business_Tools_Hub {
             'color-palette'       => __( 'Color Palette Generator', 'ald-business-tools' ),
             'image-compressor'    => __( 'Image Compressor', 'ald-business-tools' ),
             'image-resizer'       => __( 'Social Media Image Resizer', 'ald-business-tools' ),
+            'image-converter'     => __( 'Image Converter', 'ald-business-tools' ),
+            'background-remover'  => __( 'Background Remover', 'ald-business-tools' ),
             'utm-builder'         => __( 'UTM Link Builder', 'ald-business-tools' ),
         );
         ?>
@@ -183,15 +192,77 @@ final class ALD_Business_Tools_Hub {
             'nonce'   => wp_create_nonce( 'bth_nonce' ),
             'pluginUrl' => BTH_PLUGIN_URL,
         ) );
+
+        // Load QR Code library locally (used by QR tool shortcode on any page)
+        wp_enqueue_script( 'bth-qrcode', BTH_PLUGIN_URL . 'assets/js/vendor/qrcode.min.js', array(), '1.0.0', true );
+
+        // Load PDF generation libraries locally (used by invoice generator)
+        wp_enqueue_script( 'bth-html2canvas', BTH_PLUGIN_URL . 'assets/js/vendor/html2canvas.min.js', array(), '1.4.1', true );
+        wp_enqueue_script( 'bth-jspdf', BTH_PLUGIN_URL . 'assets/js/vendor/jspdf.umd.min.js', array(), '2.5.1', true );
     }
 
     public function enqueue_admin( $hook ) {
         $screen = get_current_screen();
-        if ( $screen && $screen->post_type === 'bth_tool' ) {
+        if ( $screen && ( $screen->post_type === 'bth_tool' || $screen->id === 'bth_tool' ) ) {
             wp_enqueue_style( 'bth-admin', BTH_PLUGIN_URL . 'assets/css/admin.css', array(), BTH_VERSION );
             wp_enqueue_script( 'bth-admin', BTH_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), BTH_VERSION, true );
         }
     }
 }
+
+/**
+ * Auto-create default tool posts on plugin activation
+ */
+function bth_activate_plugin() {
+    // Ensure post type is registered first
+    BTH_Post_Type::register();
+    flush_rewrite_rules();
+
+    $default_tools = array(
+        'currency-converter'  => array( 'title' => 'Currency Converter',  'icon' => '💱', 'cat' => 'finance' ),
+        'profit-calculator'   => array( 'title' => 'Profit Calculator',   'icon' => '📊', 'cat' => 'finance' ),
+        'qr-generator'        => array( 'title' => 'QR Code Generator',   'icon' => '📱', 'cat' => 'marketing' ),
+        'meta-tag-generator'  => array( 'title' => 'Meta Tag Generator',  'icon' => '🏷️', 'cat' => 'website-seo' ),
+        'invoice-generator'   => array( 'title' => 'Invoice Generator',   'icon' => '🧾', 'cat' => 'finance' ),
+        'color-palette'       => array( 'title' => 'Color Palette Generator', 'icon' => '🎨', 'cat' => 'image-design' ),
+        'image-compressor'    => array( 'title' => 'Image Compressor',    'icon' => '🗜️', 'cat' => 'image-design' ),
+        'image-resizer'       => array( 'title' => 'Image Resizer',       'icon' => '📐', 'cat' => 'image-design' ),
+        'image-converter'     => array( 'title' => 'Image Converter',     'icon' => '🔄', 'cat' => 'image-design' ),
+        'background-remover'  => array( 'title' => 'Background Remover',  'icon' => '✂️', 'cat' => 'image-design' ),
+        'utm-builder'         => array( 'title' => 'UTM Link Builder',    'icon' => '🔗', 'cat' => 'marketing' ),
+    );
+
+    foreach ( $default_tools as $type => $tool ) {
+        // Check if a post with this tool type already exists
+        $existing = get_posts( array(
+            'post_type'      => 'bth_tool',
+            'post_status'    => 'any',
+            'meta_key'       => '_bth_tool_type',
+            'meta_value'     => $type,
+            'posts_per_page' => 1,
+        ) );
+
+        if ( ! empty( $existing ) ) {
+            continue; // Skip if already exists
+        }
+
+        $post_id = wp_insert_post( array(
+            'post_title'   => $tool['title'],
+            'post_status'  => 'publish',
+            'post_type'    => 'bth_tool',
+        ) );
+
+        if ( ! is_wp_error( $post_id ) ) {
+            update_post_meta( $post_id, '_bth_tool_type', $type );
+            update_post_meta( $post_id, '_bth_tool_icon', $tool['icon'] );
+
+            // Assign category
+            if ( taxonomy_exists( 'bth_tool_category' ) ) {
+                wp_set_object_terms( $post_id, $tool['cat'], 'bth_tool_category' );
+            }
+        }
+    }
+}
+register_activation_hook( __FILE__, 'bth_activate_plugin' );
 
 ALD_Business_Tools_Hub::get_instance();

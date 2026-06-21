@@ -3,23 +3,46 @@
  */
 
 /* Tool type meta box */
-.bth-tool-type-field {
-    margin-bottom: 12px;
+#bth_tool_settings {
+    display: block !important;
 }
 
-.bth-tool-type-field label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 4px;
+#bth_tool_settings .inside {
+    display: block !important;
+    padding: 12px !important;
 }
 
-.bth-tool-type-field select,
-.bth-tool-type-field input[type="text"] {
-    width: 100%;
+#bth_tool_settings .bth-tool-type-field {
+    display: block !important;
+    margin-bottom: 16px;
+    clear: both;
 }
 
-.bth-tool-type-field .description {
-    font-size: 12px;
-    color: #646970;
-    margin-top: 4px;
+#bth_tool_settings .bth-tool-type-field:last-child {
+    margin-bottom: 0;
+}
+
+#bth_tool_settings .bth-tool-type-field label {
+    display: block !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    color: #1d2327 !important;
+}
+
+#bth_tool_settings .bth-tool-type-field select,
+#bth_tool_settings .bth-tool-type-field input[type="text"] {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+#bth_tool_settings .bth-tool-type-field .description {
+    font-size: 12px !important;
+    color: #646970 !important;
+    margin-top: 4px !important;
+    font-style: normal !important;
+    display: block !important;
 }

@@ -191,29 +191,27 @@ if ( ! defined( 'ABSPATH' ) ) {
                     h = maxHeight;
                 }
 
-                // Determine output type
+                // Always use JPEG for compression — quality slider actually works
                 var outputType = 'image/jpeg';
-                if (currentFile.type === 'image/png') outputType = 'image/png';
-                if (currentFile.type === 'image/webp') outputType = 'image/webp';
+                var outputQuality = quality;
 
-                // For PNG, quality doesn't apply the same way; still pass it for canvas
+                // If original is PNG with transparency and no resize/quality=100 requested, keep PNG
+                // But for compression purposes, JPEG gives real file size reduction
                 var canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
                 var ctx = canvas.getContext('2d');
 
-                // White background for JPEG to avoid black fill on transparent images
-                if (outputType === 'image/jpeg') {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillRect(0, 0, w, h);
-                }
-
+                // White background for JPEG (transparent areas become white)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, w, h);
                 ctx.drawImage(img, 0, 0, w, h);
 
-                compressedDataUrl = canvas.toDataURL(outputType, quality);
+                compressedDataUrl = canvas.toDataURL(outputType, outputQuality);
 
-                // Calculate compressed size from data URL
-                var compressedBytes = Math.round((compressedDataUrl.length * 3) / 4);
+                // Calculate real byte size from base64 data URL
+                var base64 = compressedDataUrl.split(',')[1] || '';
+                var compressedBytes = Math.round((base64.length * 3) / 4);
 
                 // Draw compressed preview
                 var compImg = new Image();

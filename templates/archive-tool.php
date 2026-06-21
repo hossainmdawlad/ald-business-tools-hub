@@ -68,18 +68,21 @@ get_header();
                         </div>
                         <?php endwhile; ?>
 
-                        <div class="bth-pagination">
-                            <?php the_posts_pagination( array(
-                                'mid_size'  => 2,
-                                'prev_text' => '←',
-                                'next_text' => '→',
-                            ) ); ?>
-                        </div>
-
                     <?php else : ?>
                         <p class="bth-error"><?php esc_html_e( 'No tools found.', 'ald-business-tools' ); ?></p>
                     <?php endif; ?>
                 </div>
+
+                <!-- Pagination (outside grid) -->
+                <?php if ( have_posts() ) : ?>
+                <div class="bth-pagination">
+                    <?php the_posts_pagination( array(
+                        'mid_size'  => 2,
+                        'prev_text' => '←',
+                        'next_text' => '→',
+                    ) ); ?>
+                </div>
+                <?php endif; ?>
 
             </div>
 

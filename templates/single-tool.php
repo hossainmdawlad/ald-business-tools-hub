@@ -53,6 +53,12 @@ if ( ! $tool_icon ) {
             case 'image-resizer':
                 include BTH_PLUGIN_DIR . 'tools/image-resizer.php';
                 break;
+            case 'image-converter':
+                include BTH_PLUGIN_DIR . 'tools/image-converter.php';
+                break;
+            case 'background-remover':
+                include BTH_PLUGIN_DIR . 'tools/background-remover.php';
+                break;
             case 'utm-builder':
                 include BTH_PLUGIN_DIR . 'tools/utm-builder.php';
                 break;

@@ -28,8 +28,8 @@ if ( ! defined( 'ABSPATH' ) ) {
         <button type="button" class="bth-btn bth-btn-primary" id="bth-qr-generate"><?php esc_html_e( 'Generate QR Code', 'ald-business-tools' ); ?></button>
     </div>
 
-    <div class="bth-qr-result" id="bth-qr-result">
-        <canvas id="bth-qr-canvas"></canvas>
+    <div class="bth-qr-result" id="bth-qr-result" style="display:none;">
+        <div id="bth-qr-canvas"></div>
     </div>
 
     <div class="bth-form-group" id="bth-qr-download-wrap" style="display:none;">
@@ -37,7 +37,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 (function () {
     'use strict';
@@ -45,10 +44,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     var input   = document.getElementById('bth-qr-input');
     var sizeSel = document.getElementById('bth-qr-size');
     var btnGen  = document.getElementById('bth-qr-generate');
-    var canvas  = document.getElementById('bth-qr-canvas');
     var result  = document.getElementById('bth-qr-result');
+    var qrDiv   = document.getElementById('bth-qr-canvas');
     var btnDown = document.getElementById('bth-qr-download');
     var downWrap = document.getElementById('bth-qr-download-wrap');
+    var qrInstance = null;
 
     btnGen.addEventListener('click', function () {
         var text = input.value.trim();
@@ -57,28 +57,46 @@ if ( ! defined( 'ABSPATH' ) ) {
             return;
         }
 
+        if (typeof QRCode === 'undefined') {
+            alert('<?php echo esc_js( __( 'QR Code library not loaded. Please refresh the page.', 'ald-business-tools' ) ); ?>');
+            return;
+        }
+
         var size = parseInt(sizeSel.value, 10) || 256;
 
-        QRCode.toCanvas(canvas, text, {
+        // Clear previous QR code
+        qrDiv.innerHTML = '';
+        qrInstance = null;
+
+        // Generate new QR code
+        qrInstance = new QRCode(qrDiv, {
+            text: text,
             width: size,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#ffffff'
-            }
-        }, function (error) {
-            if (error) {
-                alert('<?php echo esc_js( __( 'Failed to generate QR code. Please try again.', 'ald-business-tools' ) ); ?>');
-                console.error(error);
-                return;
-            }
-            result.style.display = 'block';
-            downWrap.style.display = 'block';
+            height: size,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
         });
+
+        result.style.display = 'block';
+        downWrap.style.display = 'block';
     });
 
     btnDown.addEventListener('click', function () {
-        var dataUrl = canvas.toDataURL('image/png');
+        // Get the canvas or image from the QR code div
+        var img = qrDiv.querySelector('img');
+        var canvas = qrDiv.querySelector('canvas');
+
+        var dataUrl;
+        if (img && img.src) {
+            dataUrl = img.src;
+        } else if (canvas) {
+            dataUrl = canvas.toDataURL('image/png');
+        } else {
+            alert('<?php echo esc_js( __( 'No QR code to download. Please generate one first.', 'ald-business-tools' ) ); ?>');
+            return;
+        }
+
         var link = document.createElement('a');
         link.download = 'qrcode.png';
         link.href = dataUrl;
